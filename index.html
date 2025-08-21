@@ -1,0 +1,1860 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polaris AI Research System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #232F3E;
+            --secondary: #FF9900;
+            --accent: #146EB4;
+            --success: #067D62;
+            --warning: #F79E1B;
+            --danger: #D13212;
+            --dark: #16191F;
+            --light: #F7F8FA;
+            --border: #E3E6EB;
+            --text: #0F1111;
+            --text-light: #565959;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        /* Layout */
+        .container {
+            display: flex;
+            height: 100vh;
+            background: white;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--primary);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 100;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .logo {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--warning) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .nav-item {
+            color: #B0B7C3;
+            padding: 12px 16px;
+            margin: 4px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--secondary);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            min-width: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            background: #F7F8FA;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .search-bar {
+            padding: 10px 20px;
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            width: 300px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(20, 110, 180, 0.1);
+        }
+
+        .region-selector, .category-selector {
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .region-selector:hover, .category-selector:hover {
+            border-color: var(--accent);
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px 40px;
+        }
+
+        /* Dashboard Specific */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .metric-label {
+            color: var(--text-light);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .metric-change {
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .metric-change.positive {
+            color: var(--success);
+            background: rgba(6, 125, 98, 0.1);
+        }
+
+        .metric-change.negative {
+            color: var(--danger);
+            background: rgba(209, 50, 18, 0.1);
+        }
+
+        /* Watchouts Section */
+        .watchouts-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .view-all-btn {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .view-all-btn:hover {
+            background: rgba(20, 110, 180, 0.1);
+        }
+
+        .watchout-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .watchout-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .watchout-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .watchout-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.3; }
+        }
+
+        .watchout-priority {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .watchout-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .watchout-description {
+            font-size: 14px;
+            opacity: 0.9;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .watchout-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* Insights Timeline */
+        .insights-timeline {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .timeline-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+        }
+
+        .timeline-card.immediate {
+            border-color: var(--danger);
+        }
+
+        .timeline-card.medium {
+            border-color: var(--warning);
+        }
+
+        .timeline-card.long {
+            border-color: var(--success);
+        }
+
+        .timeline-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .timeline-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .timeline-card.immediate .timeline-icon {
+            background: rgba(209, 50, 18, 0.1);
+            color: var(--danger);
+        }
+
+        .timeline-card.medium .timeline-icon {
+            background: rgba(247, 158, 27, 0.1);
+            color: var(--warning);
+        }
+
+        .timeline-card.long .timeline-icon {
+            background: rgba(6, 125, 98, 0.1);
+            color: var(--success);
+        }
+
+        .timeline-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .timeline-items {
+            list-style: none;
+        }
+
+        .timeline-items li {
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            color: var(--text-light);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .timeline-items li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        /* Live Market Feed */
+        .feed-container {
+            display: grid;
+            gap: 20px;
+        }
+
+        .feed-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feed-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+        }
+
+        .feed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .feed-source {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--light);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .feed-source.bloomberg {
+            background: #2800D7;
+            color: white;
+        }
+
+        .feed-source.statista {
+            background: #1B3A57;
+            color: white;
+        }
+
+        .feed-time {
+            color: var(--text-light);
+            font-size: 12px;
+        }
+
+        .feed-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .feed-content {
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .feed-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .feed-tag {
+            padding: 4px 10px;
+            background: var(--light);
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* Research Library */
+        .research-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .research-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .research-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .research-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+        }
+
+        .research-type {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .research-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .research-date {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .research-body {
+            padding: 20px;
+        }
+
+        .research-summary {
+            color: var(--text-light);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .research-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+        }
+
+        .research-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .research-action {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Traffic Performance */
+        .traffic-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .traffic-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .app-comparison {
+            margin-top: 20px;
+        }
+
+        .app-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .app-item:last-child {
+            border-bottom: none;
+        }
+
+        .app-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .app-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .app-name {
+            font-weight: 500;
+        }
+
+        .app-metrics {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .app-traffic {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .app-change {
+            font-size: 14px;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-placeholder::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: rgba(255,255,255,0.5);
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            to { left: 100%; }
+        }
+
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-chip:hover {
+            border-color: var(--accent);
+            background: rgba(20, 110, 180, 0.05);
+        }
+
+        .filter-chip.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                height: 100vh;
+                z-index: 1000;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .metrics-grid,
+            .watchout-grid,
+            .insights-timeline,
+            .research-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Hide all pages initially */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Mobile menu toggle */
+        .menu-toggle {
+            display: none;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <span>POLARIS</span>
+            </div>
+            
+            <nav>
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="watchouts">
+                    <span class="nav-icon">⚠️</span>
+                    <span>Watchouts</span>
+                </a>
+                <a href="#" class="nav-item" data-page="market-feed">
+                    <span class="nav-icon">📰</span>
+                    <span>Live Market Feed</span>
+                </a>
+                <a href="#" class="nav-item" data-page="research">
+                    <span class="nav-icon">📚</span>
+                    <span>Internal Research</span>
+                </a>
+                <a href="#" class="nav-item" data-page="traffic">
+                    <span class="nav-icon">📈</span>
+                    <span>Web Traffic</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                <div class="header-actions">
+                    <input type="text" class="search-bar" placeholder="Search insights...">
+                    <select class="region-selector">
+                        <option>Region: Brazil</option>
+                        <option>Region: Germany</option>
+                        <option>Region: India</option>
+                        <option>Region: US</option>
+                        <option>Region: UK</option>
+                    </select>
+                    
+                </div>
+            </header>
+
+            <!-- Dashboard Page -->
+            <div class="content page active" id="dashboard">
+                <!-- Top Watchouts Section -->
+                <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 30px;">
+                    <div class="section-header" style="margin-bottom: 25px;">
+                        <h2 class="section-title">Top Watchouts - Priority Overview</h2>
+                        <div style="font-size: 20px; color: var(--text-light);">Cross-category strategic concerns by urgency</div>
+                    </div>
+
+                    <!-- Priority Tabs -->
+                    <div style="display: flex; gap: 20px; margin-bottom: 25px; border-bottom: 1px solid #e0e0e0; padding-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 8px; height: 8px; background: #dc3545; border-radius: 50%;"></div>
+                            <span style="font-weight: 600; color: #dc3545;">IMMEDIATE (Next 7 Days)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 8px; height: 8px; background: #ffc107; border-radius: 50%;"></div>
+                            <span style="font-weight: 600; color: #ffc107;">MIDTERM (2-4 Weeks)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 8px; height: 8px; background: #28a745; border-radius: 50%;"></div>
+                            <span style="font-weight: 600; color: #28a745;">LONGTERM (1-3 Months)</span>
+                        </div>
+                    </div>
+
+                    <!-- Watchouts Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                        <!-- IMMEDIATE Column -->
+                        <div>
+                            <!-- Brazil Watchout 1 -->
+                            <div style="background: #fff; border: 2px solid #dc3545; border-radius: 8px; padding: 18px; margin-bottom: 15px; width: 270px; height: 280px;">
+                                <h4 style="font-size: 15px; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Shopee's Market Performance vs Amazon</h4>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                    
+                                    
+                                </div>
+                                <p style="font-size: 13px; color: #565959; line-height: 1.5;">Shopee's strategic focus on low-ASP segment ($7-12) and aggressive fee subsidies driving significant market share gains, outpacing Amazon's growth by 7x (108% vs 14.7% YoY)                                        
+</p>
+<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                    
+                                    
+                                </div>
+<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                    
+                                    
+                                </div>
+                            </div>                         
+
+                            <!-- Brazil Watchout 2 -->
+                            
+                        </div>
+
+                        <!-- MIDTERM Column -->
+                        <div>
+                            <!-- India Watchout -->
+                            
+
+                            <!-- Germany Watchout 2 -->
+                            <div style="background: #fff; border: 2px solid #ffc107; border-radius: 8px; padding: 18px; margin-bottom: 15px; width: 270px; height: 280px">
+                                <h4 style="font-size: 15px; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">MELI's Network and Delivery Investments</h4>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                    
+                                    
+                                </div>
+                                <p style="font-size: 13px; color: #565959; line-height: 1.5;">MELI's planned $6B investment in 2025 for network topology, combined with existing 7 dedicated planes, threatens to widen the current speed gap with Amazon BR. Meli offering 3-hour delivery already in São Paulo through it's 97% managed delivery network (Mercado Envio/Full), signaling aggressive expansion.</p>
+                            </div>
+
+                            <!-- Brazil Watchout 3 -->
+                            
+                        </div>
+
+                        <!-- LONGTERM Column -->
+                        <div>
+                            <!-- Germany Watchout 3 -->
+                            
+
+                            <!-- India Watchout 2 -->
+                            <div style="background: #fff; border: 2px solid #28a745; border-radius: 8px; padding: 18px; margin-bottom: 15px; width: 270px; height: 280px">
+                                <h4 style="font-size: 15px; font-weight: 600; margin-bottom: 8px; color: #1a1a1a;">Competitive Pricing Landscape</h4>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                    
+                                    
+                                </div>
+                                <p style="font-size: 13px; color: #565959; line-height: 1.5;">MELI's recent fee reduction in response to Shopee's aggressive pricing mechanisms and #1 Low Price Rank position signals intensifying market pressure on marketplace economics</p>
+<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;"></div>
+<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;"></div>
+                            </div>
+
+                            <!-- Brazil Watchout 4 -->
+                            
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Intelligence & Research Insights Section -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px;">
+                    <!-- Market Intelligence -->
+                    <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Research Insights</h3>
+                        <div style="font-size: 13px; color: #999; margin-bottom: 25px;">Curated internal findings</div>
+                        
+                        <div style="margin-bottom: 30px;">
+                            <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 18px; color: #333;">Pricing Strategy</h4>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="padding: 10px 0; font-size: 14px; color: #444; border-bottom: 0.5px solid #f5f5f5;">• Free-shipping threshold cut from R$79 to just R$19 in Brazil, effectively enabling free delivery on nearly all items</li>
+                                <li style="padding: 10px 0; font-size: 14px; color: #444; border-bottom: 1px solid #f5f5f5;">• Seller shipping costs pared by up to 40%, targeting low-price competition zones</li>
+                                
+                            </ul>
+                        </div>
+
+                        <div style="margin-bottom: 25px;">
+                            <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 18px; color: #333;">Logistics Investment</h4>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="padding: 10px 0; font-size: 14px; color: #444; border-bottom: 1px solid #f5f5f5;">• Meli plans ~$6 billion investment in Brazil logistics in 2025, reinforcing fast-delivery capabilities</li>
+                                
+                                
+                            </ul>
+                        </div>
+
+                        <a href="#" onclick="navigateToPage('market-feed')" style="display: inline-block; color: #4285f4; font-size: 14px; font-weight: 500; text-decoration: none;">View Full Market Feed</a>
+                    </div>
+
+                    <!-- Research Insights -->
+                    <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Research Insights</h3>
+                        <div style="font-size: 13px; color: #999; margin-bottom: 25px;">Curated internal findings</div>
+                        
+                        <div style="margin-bottom: 30px;">
+                            <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 18px; color: #333;">Selection and Size</h4>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="padding: 10px 0; font-size: 14px; color: #444; border-bottom: 0.5px solid #f5f5f5;">• Avg. Selling Price: Amazon – $14.23, Shopee – $7.40 → Shopee positioned nearly 50% cheaper per unit vs Amazon</li>
+                                
+                                <li style="padding: 10px 0; font-size: 14px; color: #444;">• Domestic selection: Shopee – ~7.8M ASINs vs Amazon – 4.9M → Shopee’s local SKU depth already surpasses Amazon’s </li>
+                            </ul>
+                        </div>
+
+                        <div style="margin-bottom: 25px;">
+                            <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 18px; color: #333;">Delivery Speed &amp; Logistics</h4>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="padding: 10px 0; font-size: 14px; color: #444; border-bottom: 1px solid #f5f5f5;">• Amazon Brazil's 1-day delivery share (top cities): 37%, versus Mercado Libre’s 30%—indicating MELI slightly lags in next-day fulfillment</li>
+                                <li style="padding: 10px 0; font-size: 14px; color: #444; border-bottom: 1px solid #f5f5f5;">• Average “Click-to-Promise” (CTP) in top cities: Amazon – 5.4 days vs. 4.8 days on MELI — showing MELI processes slightly faster orders.</li>
+                                
+                            </ul>
+                        </div>
+
+                        <a href="#" onclick="navigateToPage('research')" style="display: inline-block; color: #4285f4; font-size: 14px; font-weight: 500; text-decoration: none;">Explore All Internal Research</a>
+                    </div>
+                </div>
+
+                <!-- Business Performance Section -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 30px">
+                        <h4 style="font-size: 20px; font-weight: 600; margin-bottom: 20px;">Brazil Market Traffic (Jul 2025)</h4>
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                <span style="font-size: 14px; color: #333;">Amazon.com.br</span>
+                                <span style="font-size: 14px; font-weight: 600;">194.8M</span>
+                            </div>
+                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; position: relative;">
+                                <div style="background: #4285f4; height: 100%; width: 58.3%; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                <span style="font-size: 14px; color: #333;">Mercadolivre.com.br</span>
+                                <span style="font-size: 14px; font-weight: 600;">272.6M</span>
+                            </div>
+                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; position: relative;">
+                                <div style="background: #ff9500; height: 100%; width: 81.5%; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                <span style="font-size: 14px; color: #333;">Magazineluiza.com.br</span>
+                                <span style="font-size: 14px; font-weight: 600;">47.9M</span>
+                            </div>
+                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; position: relative;">
+                                <div style="background: #28a745; height: 100%; width: 14.3%; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+<div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                <span style="font-size: 14px; color: #333;">Shopee.com</span>
+                                <span style="font-size: 14px; font-weight: 600;">153.2M</span>
+                            </div>
+                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; position: relative;">
+                                <div style="background: #FA8072; height: 100%; width: 45.8%; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; display: grid; grid-template-columns: 2; gap: 5px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                            <div style="font-size: 12px; color: #666;">Amazon Market Share</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #1a1a1a;">29.1%</div>
+                            <div style="font-size: 12px; color: #4FBF40;">↑ 19.1% vs last month</div>
+                        </div>
+                    </div>
+    <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 30px;">
+        <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 12px;">Flywheel Metrics (Jul 2025)</h3>
+        <div style="font-size: 14px; color: #999; margin-bottom: 25px;">Amazon BR vs. Mercado Livre Benchmarks</div>
+
+        <!-- Delivery Experience -->
+        <h4 style="font-size: 18px; font-weight: 700; margin-top: 20px; margin-bottom: 12px;">Delivery Experience</h4>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+            <div>Click-to-Promise (C2P): 5.4 vs. 4.8 days</div>
+            <div>Click-to-Delivery (C2D): 4.1 vs. 3.3 days</div>
+            <div>OD GLance View Speed (GVS): 7.1% vs. 8.1%</div>
+            <div>1D GLance View Speed (GVS): 27.8% vs. 27.8%</div>
+        </div>
+
+        <!-- Pricing -->
+        <h4 style="font-size: 18px; font-weight: 700; margin-top: 20px; margin-bottom: 12px;">Pricing</h4>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+            <div>Box Price Competitiveness: 91.26%</div>
+            
+            
+            
+            
+        </div>
+
+        <!-- Selection -->
+        <h4 style="font-size: 18px; font-weight: 700; margin-top: 20px; margin-bottom: 12px;">Selection</h4>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+            <div>Selection (No. of ASINS): 122MM vs. 28MM</div>
+<div>No. of Domestic ASINS: 4.9MM vs. 23.4MM</div>
+<div>No. of International ASINS: 48.7MM vs. 1.6MM</div>
+
+        </div>
+    </div>
+            </div>
+
+
+                
+                
+
+            <!-- Watchouts List Page -->
+            <div class="content page" id="watchouts">
+                <div class="filters-bar">
+                    <div class="filter-chip active">All Priorities</div>
+                    <div class="filter-chip">High Priority</div>
+                    <div class="filter-chip">Medium Priority</div>
+                    <div class="filter-chip">Low Priority</div>
+                    <div class="filter-chip">Immediate</div>
+                    <div class="filter-chip">Medium-term</div>
+                    <div class="filter-chip">Long-term</div>
+                </div>
+
+                <!-- Summary Stats -->
+                <div class="watchout-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                    <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="font-size: 24px; font-weight: bold; color: var(--danger);">12</div>
+                        <div style="font-size: 12px; color: var(--text-light);">High Priority</div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="font-size: 24px; font-weight: bold; color: var(--warning);">8</div>
+                        <div style="font-size: 12px; color: var(--text-light);">Medium Priority</div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="font-size: 24px; font-weight: bold; color: var(--success);">5</div>
+                        <div style="font-size: 12px; color: var(--text-light);">Low Priority</div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="font-size: 24px; font-weight: bold; color: var(--accent);">85.2</div>
+                        <div style="font-size: 12px; color: var(--text-light);">Avg Score</div>
+                    </div>
+                </div>
+
+                <!-- Detailed Watchout Cards -->
+                <div style="display: grid; gap: 25px;">
+                    <!-- Watchout 1: High Priority - BRAZIL -->
+                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.1);">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: white;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                
+                                
+                            </div>
+                            <h3 style="font-size: 22px; font-weight: 600; margin-bottom: 10px;">Shopee vs Amazon – Low-ASP Strategy Fueling Rapid Growth</h3>
+                            <p style="opacity: 0.95; line-height: 1.5;">Shopee’s sharp focus on ultra-affordable, everyday purchases (low basket sizes) combined with razor-thin seller fees and hyper-local operations have propelled it to outpace Amazon Brazil—achieving growth multiples and traffic dominance.</p>
+                        </div>
+                        <div style="padding: 25px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                                
+                                <div>
+                                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Time Horizon</div>
+                                    <div style="font-weight: 600;">Immediate to Short-term (0-30 days)</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Affected Categories</div>
+                                    <div style="font-weight: 600;">low-ASP everyday goods</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Region</div>
+                                    <div style="font-weight: 600;">Brazil (Nationwide)</div>
+                                </div>
+                            </div>
+                            
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 10px; color: var(--primary);">📊 Key Facts</h4>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">• Shopee's visits rose to <strong>153.2M in Jul'25 </strong>securing the #3 spot behind Amazon</li>
+                                    <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">• In 2024, Shopee’s sales in Brazil hit <strong>R$60 billion</strong>, twice Amazon’s sales</li>
+                                    <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">• Leveraging “SPX” logistics, Shopee delivers over <strong>70% of orders itself</strong>, achieving per-order cost of US$2–3 vs competitors’ US$3–</li>
+                                    
+                                    
+                                </ul>
+                            </div>
+
+                            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">💡 Should we consider?</h4>
+                                <ol style="margin: 0; padding-left: 20px;">
+                                    <li style="padding: 5px 0;">Launching <strong>"Amazon Express Brazil"</strong> - A low-ASP product line (e.g., R$35–70 range) with free or same-day shipping in metro areas to recapture budget shoppers</li>
+                                    <li style="padding: 5px 0;"><strong>Enhance Logistics &amp; Local Trust</strong> – Ramp up local fulfillment, integrate with Pix, and tailor operations to smaller cities where Shopee is growing fastest</li>
+                                    <li style="padding: 5px 0;"><strong>Differentiated Value Propositions</strong> – Leverage Prime benefits such as streaming, bundled discounts, or loyalty incentives that go beyond pure price competition</li>
+                                    
+                                    
+                                </ol>
+                            </div>
+
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 5px; padding: 6px 12px; background: #e8f5e9; border-radius: 20px; font-size: 12px;">
+                                    <span>🔍</span> <strong>Source:</strong> Market Insights, Internal Research
+                                </div>
+                                
+                                <div style="display: flex; align-items: center; gap: 5px; padding: 6px 12px; background: #fce4ec; border-radius: 20px; font-size: 12px;">
+                                    <span>📅</span> <strong>Generated:</strong> 45 minutes ago
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Watchout 2: High Priority - GERMANY -->
+                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.1);">
+                        
+                        
+                    </div>
+
+                    <!-- Watchout 3: High Priority - BRAZIL -->
+                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.1);">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: white;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                
+                                
+                            </div>
+                            <h3 style="font-size: 22px; font-weight: 600; margin-bottom: 10px;">MercadoLivre’s Logistics Acceleration Threatens Amazon Brazil</h3>
+                            <p style="opacity: 0.95; line-height: 1.5;">MercadoLibre’s massive $6 billion-plus logistics investment and increasingly sophisticated delivery infrastructure—overawing Amazon Brazil with 3-hour delivery in São Paulo via its nearly fully managed network.</p>
+                        </div>
+                        <div style="padding: 25px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                                
+                                <div>
+                                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Time Horizon</div>
+                                    <div style="font-weight: 600;">Mid-term (1-3 months)</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Affected Categories</div>
+                                    <div style="font-weight: 600;">All categories</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Region</div>
+                                    <div style="font-weight: 600;">Brazil (Nationwide)</div>
+                                </div>
+                            </div>
+                            
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 10px; color: var(--primary);">📊 Key Facts</h4>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">• MercadoLibre plans to allocate approximately <strong>34 billion reais in 2025</strong>, a 48% increase YoY, aimed at supercharging its tech, logistics, and operations</li>
+                                    <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">• MeLi doubling its fulfillment footprint, growing from <strong>10 to 21 distribution centers</strong>
+, with strategic deployment across São Paulo, the Northeast, South</li>
+                                    <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">• In São Paulo, MercadoLibre is already offering <strong>3-hour delivery</strong>, powered by its ~97% fully managed delivery network (Mercado Envío/Full)</li>
+                                    
+                                    
+                                </ul>
+                            </div>
+
+                            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">💡 Should we consider?</h4>
+                                <ol style="margin: 0; padding-left: 20px;">
+                                    <li style="padding: 5px 0;"><strong>Launch “Prime Express” </strong> SKU Rollout in São Paulo:
+Offer 3-hour delivery for fast-moving categories (e.g., electronics, groceries, beauty) via micro-fulfillment centers</li>
+                                    <li style="padding: 5px 0;">Target high-demand zones for dark-store deployment, prioritizing electronics, FMCG, fashion, and small essentials</li>
+                                    <li style="padding: 5px 0;">Leverage Prime benefits and curated bundles in these fast-delivery categories to deliver perceived value even if logistics parity cannot be immediately matched</li>
+                                    
+                                    
+                                </ol>
+                            </div>
+
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 5px; padding: 6px 12px; background: #e8f5e9; border-radius: 20px; font-size: 12px;">
+                                    <span>🔍</span> <strong>Source:</strong> Market Insights, Internal Research
+                                </div>
+                                
+                                <div style="display: flex; align-items: center; gap: 5px; padding: 6px 12px; background: #fce4ec; border-radius: 20px; font-size: 12px;">
+                                    <span>📅</span> <strong>Generated:</strong> 3 hours ago
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+<div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.1);">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: white;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                
+                                
+                            </div>
+                            <h3 style="font-size: 22px; font-weight: 600; margin-bottom: 10px;">MercadoLibre Tightens Pricing Amidst Shopee’s Low-Price Offensive</h3>
+                            <p style="opacity: 0.95; line-height: 1.5;">MercadoLibre’s dramatic reduction in free-shipping thresholds—from R$79 to R$19—and a simultaneous 40% cut in seller shipping costs are direct responses to Shopee’s aggressive low-price momentum</p>
+                        </div>
+                        <div style="padding: 25px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                                
+                                <div>
+                                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Time Horizon</div>
+                                    <div style="font-weight: 600;">Mid-term (0-3 months)</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Affected Categories</div>
+                                    <div style="font-weight: 600;">Everyday consumables and low-ASP items</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Region</div>
+                                    <div style="font-weight: 600;">Brazil (Nationwide)</div>
+                                </div>
+                            </div>
+                            
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 10px; color: var(--primary);">📊 Key Facts</h4>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">• MercadoLibre lowered its Brazil minimum from <strong>R$79 to R$19</strong>, making virtually the entire site eligible for free delivery</li>
+                                    <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">• Brazil sales surged: <strong>GMV +37%, items sold +31%</strong>
+, the highest growth pace since mid-2021</li>
+                                    <li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0;">• Since late May, seller shipping fees have dropped by <strong>up to 40%</strong>, notably supported by Itau BBA analysts as a targeted move to combat Shopee’s pricing influence</li>
+                                    
+                                    
+                                </ul>
+                            </div>
+
+                            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">💡 Should we consider?</h4>
+                                <ol style="margin: 0; padding-left: 20px;">
+                                    <li style="padding: 5px 0;">Free shipping on low-ASP essentials (e.g., under R$35) to counter price-sensitive demand without full site-wide subsidy</li>
+                                    <li style="padding: 5px 0;">Introduce shared promotions or logistics rebates for volume or premium-tier sellers to ease compression while rewarding scal</li>
+                                    <li style="padding: 5px 0;">Package Prime benefits (e.g., bundled services, loyalty rewards, digital content) to shift the focus from purely price to value-enhanced experiences.</li>
+                                    
+                                    
+                                </ol>
+                            </div>
+
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 5px; padding: 6px 12px; background: #e8f5e9; border-radius: 20px; font-size: 12px;">
+                                    <span>🔍</span> <strong>Source:</strong> Market Insights, Internal Research
+                                </div>
+                                
+                                <div style="display: flex; align-items: center; gap: 5px; padding: 6px 12px; background: #fce4ec; border-radius: 20px; font-size: 12px;">
+                                    <span>📅</span> <strong>Generated:</strong> 3 hours ago
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Watchout 4: High Priority - GERMANY -->
+                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.1);">
+                        
+                        
+                    </div>
+
+                    <!-- Watchout 5: Medium Priority - INDIA -->
+                    <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.1);">
+                        
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Market Feed Page -->
+            <div class="content page" id="market-feed">
+                <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 25px;">Live News Feed</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                    <!-- Market Alert #1 - Brazil -->
+                    <div style="background: white; border-left: 4px solid #dc3545; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 15px;">Market Alert #1</h3>
+                        <p style="font-size: 14px; color: #333; line-height: 1.6; margin-bottom: 20px;">
+                            <strong>Shopee doubles GMV growth vs Amazon BR –</strong> Shopee posted +108% YoY GMV growth in 2024, compared to Amazon BR’s +15%. Growth is fueled by low-ASP categories ($7.4/unit avg.) and fee subsidies, making Shopee a dominant player in high-volume, low-value retail. Domestic selection (~7.8M SKUs) already surpasses Amazon’s 4.9M in Brazil. Immediate vigilance needed in fashion, accessories, and home categories.</p>
+                        <button style="background: #4285f4; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;" onclick="alert('Full article view')">View Full Article</button>
+                    </div>
+
+                    <!-- Market Alert #2 - Germany -->
+                    
+
+                    <!-- Market Alert #3 - Brazil -->
+                    <div style="background: white; border-left: 4px solid #ffc107; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 15px;">Market Alert #2</h3>
+                        <p style="font-size: 14px; color: #333; line-height: 1.6; margin-bottom: 20px;">
+                            <strong>Real Devaluation Hits 18% vs USD</strong> - Brazilian Real reaches 15-month low impacting import costs across electronics and international brands. Competitors Magazine Luiza and Americanas increase prices by 12-15%. Central Bank intervention expected. Amazon BR margin compression estimated at 8-12% without pricing adjustment strategy.
+                        </p>
+                        <button style="background: #4285f4; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;" onclick="alert('Full article view')">View Full Article</button>
+                    </div>
+
+                    <!-- Market Alert #4 - India -->
+                    
+
+                    <!-- Market Alert #5 - Germany -->
+                    
+
+                    <!-- Market Alert #6 - Brazil -->
+                    <div style="background: white; border-left: 4px solid #28a745; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 15px;">Market Alert #3</h3>
+                        <p style="font-size: 14px; color: #333; line-height: 1.6; margin-bottom: 20px;">
+                            <strong>Meli’s $6B logistics investment threatens speed parity –</strong> Mercado Libre announced $6B investment in 2025 to expand its delivery network, adding to its 7 dedicated planes and 97% managed logistics coverage. Meli already offers 3-hour delivery in São Paulo and has broader same/next-day reach (30% of orders in top cities) vs Amazon’s 23%. Expansion risks widening the delivery speed gap in Brazil’s largest metros.</p>
+                        <button style="background: #4285f4; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;" onclick="alert('Full article view')">View Full Article</button>
+                    </div>
+
+                    <!-- Market Alert #7 - India -->
+                    
+
+                    <!-- Market Alert #8 - Germany -->
+                    
+
+                    <!-- Market Alert #9 - Brazil -->
+                    <div style="background: white; border-left: 4px solid #6c757d; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 15px;">Market Alert #4</h3>
+                        <p style="font-size: 14px; color: #333; line-height: 1.6; margin-bottom: 20px;">
+                            <strong>Pricing war intensifies as fee cuts accelerate –</strong> Mercado Libre reduced seller fees in direct response to Shopee’s aggressive pricing strategy and #1 low-price brand perception. Amazon BR’s box price competitiveness remains under strain (91.3% vs Meli; 87.4% vs Shopee). With Shopee’s low-ASP positioning and subsidies driving consumer “best value” perception, Amazon faces margin compression across electronics, home, and fashion.</p>
+                        <button style="background: #4285f4; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;" onclick="alert('Full article view')">View Full Article</button>
+                    </div>
+
+                    <!-- Market Alert #10 - India -->
+                    
+                </div>
+
+                <!-- Pagination -->
+                <div style="display: flex; justify-content: center; gap: 10px; margin-top: 30px;">
+                    <button style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer;">Previous Page</button>
+                    <button style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer;">Next Page</button>
+                </div>
+            </div>
+
+            <!-- Internal Research Page -->
+            <div class="content page" id="research">
+                <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 25px;">Internal Research</h2>
+                
+                <!-- Category and Region Filters -->
+                <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                    <select style="padding: 8px 15px; border: 1px solid #ddd; border-radius: 6px; background: white; font-size: 14px;">
+                        <option>Category: All</option>
+                        <option>Fashion</option>
+                        <option>Electronics</option>
+                        <option>Grocery</option>
+                        <option>Home &amp; Kitchen</option>
+                    </select>
+                    <select style="padding: 8px 15px; border: 1px solid #ddd; border-radius: 6px; background: white; font-size: 14px;">
+                        <option>Region: All</option>
+                        <option>Brazil</option>
+                        <option>Germany</option>
+                        <option>India</option>
+                    </select>
+                    <select style="padding: 8px 15px; border: 1px solid #ddd; border-radius: 6px; background: white; font-size: 14px;">
+                        <option>Timeframe: All</option>
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Last Quarter</option>
+                    </select>
+                </div>
+
+                <!-- Research Studies List -->
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Q1 Study - Brazil -->
+                    <div style="background: white; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <h3 style="font-size: 18px; font-weight: 600;">Q1 Shopee’s Market Performance vs Amazon BR</h3>
+                            <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 4px; font-size: 12px;">2/1/2025</span>
+                        </div>
+                        <p style="font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 20px;">Comprehensive analysis highlights Shopee’s rapid scale-up in Brazil, fueled by its dominance in low-ASP categories ($7–12) and sustained fee subsidies. Shopee’s GMV grew 108% YoY in 2024, outpacing Amazon BR’s 15% growth and positioning it as a leading threat in high-volume, low-value segments where Amazon has weaker competitiveness.</p>
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Key Points:</div>
+                        <ul style="margin: 0 0 20px 20px; padding: 0; font-size: 14px; color: #333; line-height: 1.8;">
+                            <li>Shopee GMV up +108% YoY in 2024, compared to Amazon BR’s +15% growth.</li>
+                            <li>Stronghold in low-ASP categories (avg. $7.4 per unit) vs Amazon’s $14.2 ASP</li>
+                            <li>Domestic selection of ~7.8M SKUs exceeds Amazon’s 4.9M in Brazil.</li>
+                            
+                        </ul>
+                        <div style="display: flex; gap: 10px;">
+                            <button style="background: #4285f4; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;">View full analysis</button>
+                            <button style="background: white; color: #333; border: 1px solid #ddd; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;">Download 6-pager report</button>
+                        </div>
+                    </div>
+
+                    <!-- Q2 Study - Germany -->
+                    
+
+                    
+                    
+
+                    <!-- Q4 Study - Cross-Regional -->
+                    
+
+                    <!-- Q1 Study - Brazil Customer -->
+                    <div style="background: white; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <h3 style="font-size: 18px; font-weight: 600;">Q1 Meli’s $6B Logistics Investment &amp; Speed Gap</h3>
+                            <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 4px; font-size: 12px;">10/3/2025</span>
+                        </div>
+                        <p style="font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 20px;">Mercado Libre’s planned $6B investment in 2025, combined with its existing network of 7 dedicated planes and 97% managed delivery via Mercado Envio/Full, is set to widen the logistics advantage over Amazon BR. Meli is already offering 3-hour delivery in São Paulo, and expanded same/next-day coverage poses a direct threat to Amazon’s competitive positioning in Brazil’s largest metros.</p>
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Key Points:</div>
+                        <ul style="margin: 0 0 20px 20px; padding: 0; font-size: 14px; color: #333; line-height: 1.8;">
+                            <li>Meli already covers 30% of orders in top cities with next-day delivery vs Amazon BR at 23%</li>
+                            <li>3-hour delivery live in São Paulo, supported by 97% managed network.</li>
+                            <li>Planned $6B logistics expansion in 2025 + 7 dedicated planes to scale coverage further</li>
+                            
+                        </ul>
+                        <div style="display: flex; gap: 10px;">
+                            <button style="background: #4285f4; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;">View full analysis</button>
+                            <button style="background: white; color: #333; border: 1px solid #ddd; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;">Download 6-pager report</button>
+                        </div>
+                    </div>
+<div style="background: white; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <h3 style="font-size: 18px; font-weight: 600;">Q2 Competitive Pricing &amp; Fee Pressure</h3>
+                            <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 4px; font-size: 12px;">11/5/2025</span>
+                        </div>
+                        <p style="font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 20px;">Marketplace economics are under pressure as Mercado Libre reduces fees in response to Shopee’s aggressive low-price model. Shopee holds the #1 “Low Price Rank” perception in Brazil, forcing Amazon BR to defend box competitiveness while sustaining margins. The pricing battle is expected to intensify in 2025, especially in electronics, home, and fashion.</p>
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Key Points:</div>
+                        <ul style="margin: 0 0 20px 20px; padding: 0; font-size: 14px; color: #333; line-height: 1.8;">
+                            <li>Amazon BR box price competitiveness at 91.3% vs Meli and 87.4% vs Shopee</li>
+                            <li>Shopee’s low-ASP positioning drives consumer price perception of ‘best value</li>
+                            <li>Fee subsidies and reduced take rates eroding marketplace profitability across categories</li>
+                            
+                        </ul>
+                        <div style="display: flex; gap: 10px;">
+                            <button style="background: #4285f4; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;">View full analysis</button>
+                            <button style="background: white; color: #333; border: 1px solid #ddd; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;">Download 6-pager report</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Web Traffic Performance Page -->
+            <div class="content page" id="traffic">
+                <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 25px;">Web Traffic Performance</h2>
+
+                <!-- Top KPI Cards -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Total Visits (Amazon.com.br)</div>
+                        <div style="font-size: 32px; font-weight: bold; color: #1a1a1a;">19,550</div>
+                        <div style="font-size: 14px; color: #28a745; margin-top: 8px;">↑ 12% vs last week</div>
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Avg. Session Duration (Amazon.com.br)</div>
+                        <div style="font-size: 32px; font-weight: bold; color: #1a1a1a;">3m 6s</div>
+                        <div style="font-size: 14px; color: #dc3545; margin-top: 8px;">↓ 8% vs last week</div>
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Unique Visitors (Amazon.com.br)</div>
+                        <div style="font-size: 32px; font-weight: bold; color: #1a1a1a;">16,300</div>
+                        <div style="font-size: 14px; color: #28a745; margin-top: 8px;">↑ 15% vs last week</div>
+                    </div>
+                </div>
+
+                <!-- Traffic Trends Chart -->
+                <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 30px;">
+                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px;">Traffic Trends (#Visits)</h3>
+                    <div style="position: relative; height: 300px; background: #f8f9fa; border-radius: 8px; padding: 20px;">
+                        <!-- Chart with actual data visualization -->
+                        <svg width="100%" height="260" viewBox="0 0 800 260">
+                            <!-- Grid lines -->
+                            <line x1="40" y1="20" x2="760" y2="20" stroke="#e0e0e0" stroke-width="1"></line>
+                            <line x1="40" y1="80" x2="760" y2="80" stroke="#e0e0e0" stroke-width="1"></line>
+                            <line x1="40" y1="140" x2="760" y2="140" stroke="#e0e0e0" stroke-width="1"></line>
+                            <line x1="40" y1="200" x2="760" y2="200" stroke="#e0e0e0" stroke-width="1"></line>
+                            
+                            <!-- Amazon.com.br line -->
+                            <polyline points="100,160 200,140 300,100 400,110 500,120 600,110 700,100" fill="none" stroke="#4285f4" stroke-width="2"></polyline>
+                            <circle cx="100" cy="160" r="4" fill="#4285f4"></circle>
+                            <circle cx="200" cy="140" r="4" fill="#4285f4"></circle>
+                            <circle cx="300" cy="100" r="4" fill="#4285f4"></circle>
+                            <circle cx="400" cy="110" r="4" fill="#4285f4"></circle>
+                            <circle cx="500" cy="120" r="4" fill="#4285f4"></circle>
+                            <circle cx="600" cy="110" r="4" fill="#4285f4"></circle>
+                            <circle cx="700" cy="100" r="4" fill="#4285f4"></circle>
+                            
+                            <!-- Mercadolivre.com.br line -->
+                            <polyline points="100,180 200,170 300,40 400,80 500,100 600,120 700,110" fill="none" stroke="#ff9500" stroke-width="2"></polyline>
+                            <circle cx="100" cy="180" r="4" fill="#ff9500"></circle>
+                            <circle cx="200" cy="170" r="4" fill="#ff9500"></circle>
+                            <circle cx="300" cy="40" r="4" fill="#ff9500"></circle>
+                            <circle cx="400" cy="80" r="4" fill="#ff9500"></circle>
+                            <circle cx="500" cy="100" r="4" fill="#ff9500"></circle>
+                            <circle cx="600" cy="120" r="4" fill="#ff9500"></circle>
+                            <circle cx="700" cy="110" r="4" fill="#ff9500"></circle>
+                            
+                            <!-- Y-axis labels -->
+                            <text x="20" y="25" font-size="12" fill="#666">10000</text>
+                            <text x="20" y="85" font-size="12" fill="#666">7500</text>
+                            <text x="20" y="145" font-size="12" fill="#666">5000</text>
+                            <text x="20" y="205" font-size="12" fill="#666">2500</text>
+                            
+                            <!-- X-axis labels -->
+                            <text x="90" y="240" font-size="12" fill="#666">Aug 1</text>
+                            <text x="190" y="240" font-size="12" fill="#666">Aug 2</text>
+                            <text x="290" y="240" font-size="12" fill="#666">Aug 3</text>
+                            <text x="390" y="240" font-size="12" fill="#666">Aug 4</text>
+                            <text x="490" y="240" font-size="12" fill="#666">Aug 5</text>
+                            <text x="590" y="240" font-size="12" fill="#666">Aug 6</text>
+                            <text x="690" y="240" font-size="12" fill="#666">Aug 7</text>
+                        </svg>
+                        <div style="display: flex; justify-content: center; gap: 30px; margin-top: 20px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 20px; height: 3px; background: #4285f4;"></div>
+                                <span style="font-size: 13px; color: #666;">Amazon.com.br</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 20px; height: 3px; background: #ff9500;"></div>
+                                <span style="font-size: 13px; color: #666;">Mercadolivre.com.br</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Regional Traffic Comparison -->
+                <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 20px; margin-bottom: 30px;">
+                    <!-- Brazil Traffic -->
+                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 30px">
+                        <h4 style="font-size: 20px; font-weight: 600; margin-bottom: 20px;">Brazil Market Traffic (Jul 2025)</h4>
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                <span style="font-size: 14px; color: #333;">Amazon.com.br</span>
+                                <span style="font-size: 14px; font-weight: 600;">194.8M</span>
+                            </div>
+                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; position: relative;">
+                                <div style="background: #4285f4; height: 100%; width: 58.3%; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                <span style="font-size: 14px; color: #333;">Mercadolivre.com.br</span>
+                                <span style="font-size: 14px; font-weight: 600;">272.6M</span>
+                            </div>
+                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; position: relative;">
+                                <div style="background: #ff9500; height: 100%; width: 81.5%; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                <span style="font-size: 14px; color: #333;">Magazineluiza.com.br</span>
+                                <span style="font-size: 14px; font-weight: 600;">47.9M</span>
+                            </div>
+                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; position: relative;">
+                                <div style="background: #28a745; height: 100%; width: 14.3%; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+<div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                <span style="font-size: 14px; color: #333;">Shopee.com</span>
+                                <span style="font-size: 14px; font-weight: 600;">153.2M</span>
+                            </div>
+                            <div style="background: #e0e0e0; height: 8px; border-radius: 4px; position: relative;">
+                                <div style="background: #FA8072; height: 100%; width: 45.8%; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; display: grid; grid-template-columns: 2; gap: 5px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                            <div style="font-size: 12px; color: #666;">Amazon Market Share</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #1a1a1a;">29.1%</div>
+                            <div style="font-size: 12px; color: #4FBF40;">↑ 19.1% vs last month</div>
+                        </div>
+                    </div>
+
+                    
+                    
+
+                    
+                    
+                </div>
+
+                <!-- Conversion & Performance Metrics -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                    <!-- Session Duration Comparison -->
+                    <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px;">Avg. Visit Duration (in secs)</h3>
+                        <div style="position: relative; height: 250px; background: #f8f9fa; border-radius: 8px; padding: 20px;">
+                            <svg width="100%" height="210" viewBox="0 0 600 210">
+                                <!-- Grid lines -->
+                                <line x1="40" y1="20" x2="560" y2="20" stroke="#e0e0e0" stroke-width="1"></line>
+                                <line x1="40" y1="70" x2="560" y2="70" stroke="#e0e0e0" stroke-width="1"></line>
+                                <line x1="40" y1="120" x2="560" y2="120" stroke="#e0e0e0" stroke-width="1"></line>
+                                <line x1="40" y1="170" x2="560" y2="170" stroke="#e0e0e0" stroke-width="1"></line>
+                                
+                                <!-- Amazon line -->
+                                <polyline points="80,100 160,120 240,80 320,100 400,90 480,95" fill="none" stroke="#4285f4" stroke-width="2"></polyline>
+                                <circle cx="240" cy="80" r="4" fill="#4285f4"></circle>
+                                
+                                <!-- Mercado Livre line -->
+                                <polyline points="80,110 160,105 240,60 320,80 400,85 480,90" fill="none" stroke="#ff9500" stroke-width="2"></polyline>
+                                <circle cx="240" cy="60" r="4" fill="#ff9500"></circle>
+                                
+                                <!-- Aug 3 label with values -->
+                                <text x="240" y="55" font-size="11" fill="#ff9500" text-anchor="middle">Mercadolivre: 300s</text>
+                                <text x="240" y="75" font-size="11" fill="#4285f4" text-anchor="middle">Amazon: 175s</text>
+                                
+                                <!-- Y-axis labels -->
+                                <text x="20" y="25" font-size="11" fill="#666">300</text>
+                                <text x="20" y="75" font-size="11" fill="#666">225</text>
+                                <text x="20" y="125" font-size="11" fill="#666">150</text>
+                                <text x="20" y="175" font-size="11" fill="#666">75</text>
+                                
+                                <!-- X-axis labels -->
+                                <text x="80" y="200" font-size="11" fill="#666">Aug 1</text>
+                                <text x="160" y="200" font-size="11" fill="#666">Aug 2</text>
+                                <text x="240" y="200" font-size="11" fill="#666">Aug 3</text>
+                                <text x="320" y="200" font-size="11" fill="#666">Aug 4</text>
+                                <text x="400" y="200" font-size="11" fill="#666">Aug 5</text>
+                                <text x="480" y="200" font-size="11" fill="#666">Aug 6</text>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Key Performance Insights -->
+                    <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px;">Key Insights</h3>
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                <div style="width: 8px; height: 8px; background: #dc3545; border-radius: 50%;"></div>
+                                <span style="font-size: 13px; font-weight: 600; color: #dc3545;">Critical</span>
+                            </div>
+                            <p style="font-size: 13px; color: #333; line-height: 1.6;">Mercado Livre traffic surged 35% during "Yellow November" preview</p>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                <div style="width: 8px; height: 8px; background: #ffc107; border-radius: 50%;"></div>
+                                <span style="font-size: 13px; font-weight: 600; color: #ffc107;">Warning</span>
+                            </div>
+                            <p style="font-size: 13px; color: #333; line-height: 1.6;">Session duration 42% lower than competitors in Brazil market</p>
+                        </div>
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                <div style="width: 8px; height: 8px; background: #28a745; border-radius: 50%;"></div>
+                                <span style="font-size: 13px; font-weight: 600; color: #28a745;">Positive</span>
+                            </div>
+                            <p style="font-size: 13px; color: #333; line-height: 1.6;">Amazon BR market share holding strong at 29.1%+ despite Shopee expansion</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Navigation functionality
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetPage = this.dataset.page;
+                navigateToPage(targetPage);
+            });
+        });
+
+        function navigateToPage(pageName) {
+            // Update active nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.page === pageName) {
+                    item.classList.add('active');
+                }
+            });
+
+            // Update active page
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageName).classList.add('active');
+
+            // Update page title
+            const titles = {
+                'dashboard': 'Dashboard',
+                'watchouts': 'Watchouts List',
+                'market-feed': 'Live Market Feed',
+                'research': 'Internal Research Library',
+                'traffic': 'Web Traffic Performance'
+            };
+            document.getElementById('pageTitle').textContent = titles[pageName] || 'Dashboard';
+
+            // Close mobile sidebar if open
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+        }
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Filter functionality
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                // Toggle active state
+                if (this.textContent.startsWith('All')) {
+                    // If "All" is clicked, deactivate others
+                    this.parentElement.querySelectorAll('.filter-chip').forEach(c => {
+                        c.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                } else {
+                    // Toggle individual filter
+                    this.classList.toggle('active');
+                    // Deactivate "All" if individual filter is selected
+                    const allFilter = Array.from(this.parentElement.children).find(c => 
+                        c.textContent.startsWith('All')
+                    );
+                    if (allFilter) {
+                        allFilter.classList.remove('active');
+                    }
+                }
+                
+                // Here you would typically filter the content
+                console.log('Filter applied:', this.textContent);
+            });
+        });
+
+        // Simulate real-time updates
+        function simulateRealtimeUpdate() {
+            // Update random metric
+            const metrics = document.querySelectorAll('.metric-value');
+            if (metrics.length > 0) {
+                const randomMetric = metrics[Math.floor(Math.random() * metrics.length)];
+                const currentValue = parseFloat(randomMetric.textContent);
+                if (!isNaN(currentValue)) {
+                    const change = (Math.random() - 0.5) * 2; // Random change between -1 and 1
+                    randomMetric.textContent = (currentValue + change).toFixed(1) + '%';
+                }
+            }
+        }
+
+        // Update every 5 seconds for demo
+        setInterval(simulateRealtimeUpdate, 5000);
+
+        // Search functionality
+        document.querySelector('.search-bar').addEventListener('input', function(e) {
+            console.log('Searching for:', e.target.value);
+            // Implement search functionality here
+        });
+
+        // Region and Category selectors
+        document.querySelector('.region-selector').addEventListener('change', function(e) {
+            console.log('Region selected:', e.target.value);
+            // Update content based on region
+        });
+
+        document.querySelector('.category-selector').addEventListener('change', function(e) {
+            console.log('Category selected:', e.target.value);
+            // Update content based on category
+        });
+
+        // Add loading animation to charts on page load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.querySelectorAll('.chart-placeholder').forEach(chart => {
+                    chart.style.opacity = '1';
+                });
+            }, 500);
+        });
+
+        // Add click handlers for watchout cards
+        document.querySelectorAll('.watchout-card').forEach(card => {
+            card.addEventListener('click', function() {
+                console.log('Watchout clicked:', this.querySelector('.watchout-title').textContent);
+                // Open detailed view
+            });
+        });
+
+        // Add click handlers for research cards
+        document.querySelectorAll('.research-card').forEach(card => {
+            card.addEventListener('click', function() {
+                console.log('Research clicked:', this.querySelector('.research-title').textContent);
+                // Open full report
+            });
+        });
+
+        // Add click handlers for feed items
+        document.querySelectorAll('.feed-item').forEach(item => {
+            item.addEventListener('click', function() {
+                console.log('Feed item clicked:', this.querySelector('.feed-title').textContent);
+                // Open full article
+            });
+        });
+    </script>
+
+</body></html>
